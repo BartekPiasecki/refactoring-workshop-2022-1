@@ -71,7 +71,13 @@ void Controller::receive(std::unique_ptr<Event> e)
         Segment const& currentHead = m_segments.front();
 
         Segment newHead;
+        newHead.x = currentHead.x;
         newHead.x = currentHead.x + ((m_currentDirection & 0b01) ? (m_currentDirection & 0b10) ? 1 : -1 : 0);
+        /*if(m_currentDirection & 0b01) {
+            if(m_currentDirection & 0b10) newHead.x += 1;
+            else newHead.x += -1;
+        }*/
+
         newHead.y = currentHead.y + (not (m_currentDirection & 0b01) ? (m_currentDirection & 0b10) ? 1 : -1 : 0);
         newHead.ttl = currentHead.ttl;
 
@@ -121,7 +127,7 @@ void Controller::receive(std::unique_ptr<Event> e)
                 std::remove_if(
                     m_segments.begin(),
                     m_segments.end(),
-                    [](auto const& segment){ return not (segment.ttl > 0); }),
+                    [](auto const& segment){ return (segment.ttl <= 0); }),
                 m_segments.end());
         }
     } catch (std::bad_cast&) {
@@ -131,6 +137,7 @@ void Controller::receive(std::unique_ptr<Event> e)
             if ((m_currentDirection & 0b01) != (direction & 0b01)) {
                 m_currentDirection = direction;
             }
+            //m_currentDirection = direction;
         } catch (std::bad_cast&) {
             try {
                 auto receivedFood = *dynamic_cast<EventT<FoodInd> const&>(*e);
